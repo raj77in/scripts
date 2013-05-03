@@ -1,0 +1,34 @@
+#!/usr/bin/expect -f
+set host [lindex $argv 0]
+set uname [lindex $argv 1]
+set timeout 5
+spawn  ssh $uname@$host
+
+expect {
+    "password:" {
+        send "roamware\r"
+    } "yes/no)?" {
+        send "yes\r";
+        set timeout -1
+    } timeout {
+        exit
+    } ">" {
+        send "uname -a\r";
+    } eof {
+        exit
+    }
+}
+set igot $expect_out(buffer)
+if  {[string match *SunOS* $igot]} {
+    set os "Sun"
+    set commands(1) /bin/ping
+    set commands(2) "uptime|awk '{print  \$3 \$4}'"
+} else {
+    set os "Linux"
+}
+
+expect ">" { send "uptime\r"; }
+expect ">" { send $commands(2)\r }
+expect ">"
+set igot $expect_out(buffer)
+puts $igot;

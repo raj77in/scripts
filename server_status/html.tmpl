@@ -1,0 +1,27 @@
+                <TD BGCOLOR="#0099ff">
+                    <b><u><TMPL_VAR NAME=hostname>(<TMPL_VAR NAME=hostip>)</u></b>
+                    <BR>
+                    <b>Ping status: </b><TMPL_VAR NAME=pingst> <BR>
+                    <b>OS: </b><TMPL_VAR NAME=osname> <BR>
+                    <b>Time:</b> <TMPL_VAR NAME=date><BR>
+                    <b>Uptime:</b>  <TMPL_VAR NAME=uptime> <BR>
+                    <b>Load avarage: </b> <TMPL_VAR NAME=loadavg><BR>
+                    <b>Ram/swap status:</b> <TMPL_VAR NAME=ramst><BR>
+
+                    <b>Total running process: </b>
+                    <ul>
+                        <li> <TMPL_VAR NAME=runningProcs> </li>
+                    </ul>
+                    <b>Disk status:</b>
+                    <ul>
+                        <TMPL_VAR NAME=diskst>
+                    </ul>
+                        <BR><BR>
+                    <b>Total users:</b>
+                        <TMPL_VAR NAME=usertot>
+
+                        <BR><BR>
+                    <b>Last Logins:</b>
+                        <TMPL_VAR NAME=lastst>
+
+                </td>

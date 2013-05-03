@@ -15,7 +15,7 @@
 # ORGANIZATION: Individual
 #      VERSION: 1.0
 #      CREATED: 05/02/2013 09:27:50 AM
-#Last modified: Fri May 03, 2013  12:45PM
+#Last modified: Fri May 03, 2013  13:00PM
 #     REVISION: ---
 #===============================================================================
 
@@ -151,9 +151,11 @@ foreach (@ServerList) {
         $cmds[1] = q(/usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
         $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm"';
         print "This is solaris host\n" if $debug;
+        $template->param( osname => "SunOS" );
     }
     else {
         print "OS is $read\n" if $debug;
+        $template->param( osname => "$read" );
     }
 
     ( $read, $out, $err ) = $ssh->cmd("hostname");
