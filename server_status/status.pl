@@ -52,7 +52,7 @@ use Net::Ping::External qw(ping);
 use FindBin;
 
 my $debug     = 0;
-my $timeout   = 10;
+my $timeout   = 30;
 my $GREEN     = '<font color="#00ff00">';
 my $RED       = '<font color="#ff0000">';
 my $NOC       = '</font>';
@@ -62,6 +62,7 @@ my $DISK_WARN = 75;
 my $RAM_WARN  = 40;
 my $dir       = $FindBin::Bin;
 my $listfile  = "$dir/list.txt";
+
 #print "List file is $listfile \n";
 
 # Taken from http://stackoverflow.com/questions/4809728/perl-can-i-get-paths-related-to-where-a-script-resides-and-where-it-was-execut
@@ -102,11 +103,11 @@ sub find_currentDir {
 }                                               ## --- end sub find_currentDir
 
 open( FILE, "<$listfile" );
-print "Reading the list of servers from list.txt\n" if $debug;
+print STDERR "Reading the list of servers from list.txt\n" if $debug;
 my @AServerList = <FILE>;
 my @ServerList = grep { $_ !~ /^#/ } @AServerList;
 close(FILE);
-print Dumper @ServerList if $debug;
+print STDERR Dumper @ServerList if $debug;
 my @cmds = (
     'ruptime=$(uptime);
     if $(echo $ruptime | egrep -v  "day" >/dev/null); then
@@ -118,7 +119,7 @@ my @cmds = (
 ),
 
     #'df -kh | egrep -v "^Filesystem|shm|tmpfs"| awk \'BEGIN{print "<ul>"}{w=sprintf("%d",$6);print " <li>" $5" - "$7  "&nbsp;" $6  "(" $2 ")" $4"/"$3 "</li>"}END{ print "</ul> "}\'',
-    'df -kh | egrep -v "^Filesystem|shm|tmpfs"',
+    'df -kh | egrep -v "^Filesystem|shm|tmpfs|iso"',
     'ps -eaf | egrep -v "^USER|grep|ps" | wc -l',
 );
 
@@ -132,30 +133,33 @@ Subject: Stuatus of the servers ';
 print "$now \n";
 
 print "Content-Type: text/html\n\n", $template->output;
-foreach (@ServerList) {
+for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
+    local $_ = $ServerList[$ii];
     print STDERR "Going for $_" if $debug;
     $template = HTML::Template->new( filename => "$dir/html.tmpl" );
     chomp;
-    ( my $user, my $password, my $host ) = split / /;
+    ( my $user, my $password, my $host ) = split / +/;
     my $cmd = "";
 
     #ping
-    my $alive = ping( host => "$host" );
+    my $alive = ping( hostname => "$host", timeout => 5 );
     if ( !$alive ) {
-        print "Return value from ping is $?\n" if $debug;
-        print "Ping failed\n"                  if $debug;
+        print STDERR "Return value from ping is $?\n" if $debug;
+        print STDERR "Ping failed\n"                  if $debug;
         $template->param( hostip => $host );
         $template->param( pingst => "$RED Failed $NOC" );
         print $template->output;
-        next;
+
+        #next;
     }
     else {
         $template->param( pingst => "$GREEN Ok $NOC" );
     }
 
-    print "Getting details for server $_\n"    if $debug;
-    print "Using the params for ssh - $host\n" if $debug;
-    $cmd = "ssh $host";
+    print STDERR "Getting details for server $_\n"    if $debug;
+    print STDERR "Using the params for ssh - $host\n" if $debug;
+
+    #$cmd = "ssh $host";
     my $ssh = Net::SSH::Perl->new( $host, debug => 0 ) or next;
     $ssh->login( $user, $password );
 
@@ -173,11 +177,11 @@ foreach (@ServerList) {
         #$cmds[0]="uptime";
         $cmds[1] = q(/usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
         $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm"';
-        print "This is solaris host\n" if $debug;
+        print STDERR "This is solaris host\n" if $debug;
         $template->param( osname => "SunOS" );
     }
     else {
-        print "OS is $read\n" if $debug;
+        print STDERR "OS is $read\n" if $debug;
         $template->param( osname => "$read" );
     }
 
@@ -195,17 +199,17 @@ foreach (@ServerList) {
     #uptime
     ( $read, $out, $err ) = $ssh->cmd("$cmds[0]|sed \'s/,//\'\n");
     chomp $read;
-    print "Executing $cmds[0]\n" if $debug;
-    print "Output is -- $read\n" if $debug;
+    print STDERR "Executing $cmds[0]\n" if $debug;
+    print STDERR "Output is -- $read\n" if $debug;
     $template->param( uptime => $read );
 
     # Load averavge
     $cmd = q(uptime |sed 's/.*average://'|sed 's/,/ /g'|sed 's/^ //g');
     ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
     chomp $read;
-    print "Loadavg - Output is --$read--\n" if $debug;
+    print STDERR "Loadavg - Output is --$read--\n" if $debug;
     my @loads = split( / +/, $read );
-    print Dumper @loads if $debug;
+    print STDERR Dumper @loads if $debug;
     if ( $loads[0] >= $LOAD_WARN ) {
         $template->param( loadavg => "$RED $loads[0]/$loads[1]/$loads[2] (High) $NOC\n" );
     }
@@ -214,7 +218,7 @@ foreach (@ServerList) {
     }
 
     #Running Processes
-    print "Executing $cmds[3]\n" if $debug;
+    print STDERR "Executing $cmds[3]\n" if $debug;
     ( $read, $out, $err ) = $ssh->cmd("$cmds[3]\n");
     chomp $read;
     if ( $read <= $PROC_WARN ) {
@@ -226,7 +230,7 @@ foreach (@ServerList) {
     }
 
     # Disk usage
-    print "Executing $cmds[2]\n" if $debug;
+    print STDERR "Executing $cmds[2]\n" if $debug;
     ( $read, $out, $err ) = $ssh->cmd("$cmds[2]\n");
     if ( defined $read and $read !~ /^$/ ) {
         chomp $read;
@@ -234,8 +238,8 @@ foreach (@ServerList) {
         my $disk = "";
         foreach (@disks) {
             my @parts = split / +/;
-            print Dumper @parts if $debug;
-            print "OUTPUT :: $_\n" if $debug;
+            print STDERR Dumper @parts if $debug;
+            print STDERR "OUTPUT :: $_\n" if $debug;
             $parts[4] =~ s/%//;
             if ( $parts[4] <= $DISK_WARN ) {
                 $disk = "$disk\n<li>$GREEN $parts[5] - Total($parts[1]) - $parts[4]%$NOC</li>";
@@ -252,14 +256,14 @@ foreach (@ServerList) {
     ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
     if ( defined $read and $read !~ /^$/ ) {
         chomp $read;
-        print "Output for total users - $read- \n" if $debug;
+        print STDERR "Output for total users - $read- \n" if $debug;
         $template->param( usertot => "$read" );
     }
 
     #Last log
     $cmd = q(last|head -5);
     ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
-    print "Output for last  - $read- \n" if $debug;
+    print STDERR "Output for last  - $read- \n" if $debug;
     my $lastst = "";
     foreach ( split /\n/, $read ) {
         $lastst = "<li>$_</li>\n$lastst";
@@ -267,7 +271,7 @@ foreach (@ServerList) {
     $template->param( lastst => "$lastst" );
 
     #RAM Usage
-    print "Executing $cmds[1]\n" if $debug;
+    print STDERR "Executing $cmds[1]\n" if $debug;
     ( $read, $out, $err ) = $ssh->cmd("$cmds[1]\n");
     if ( defined $read and $read !~ /^$/ ) {
         my @parts = split( /,/, $read );
@@ -278,11 +282,11 @@ foreach (@ServerList) {
             if ( $parts[$i] > 1024 ) { $parts[$i] /= 1024; $post = "Gb"; }
             $parts[$i] = sprintf( "%.3f %s", $parts[$i], $post );
         }
-        print "Total = $parts[0], used =$parts[1], percentage = $pert%\n" if $debug;
+        print STDERR "Total = $parts[0], used =$parts[1], percentage = $pert%\n" if $debug;
         $pert = sprintf( "%.2f", $pert );
-        print "Total = $parts[0], used =$parts[1], percentage = $pert%\n" if $debug;
-        print Dumper @parts                                               if $debug;
-        print "Output for last  - $read- \n"                              if $debug;
+        print STDERR "Total = $parts[0], used =$parts[1], percentage = $pert%\n" if $debug;
+        print STDERR Dumper @parts                                               if $debug;
+        print STDERR "Output for last  - $read- \n"                              if $debug;
         if ( $pert > $RAM_WARN ) {
             $read = sprintf("$RED Total - $parts[0] - Used - $pert%% $NOC\n");
         }
