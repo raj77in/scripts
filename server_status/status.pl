@@ -115,8 +115,7 @@ my @cmds = (
     else
     echo $ruptime | awk \'{ print $3 " days " $5 "(HH:MM)"}\'
     fi',
-    q( free -mto | grep Mem: | awk '{ print $2"," $3"," $4}'
-),
+    q( free -kto | grep Mem: | awk '{ print $2"," $3"," $4}'),
 
     #'df -kh | egrep -v "^Filesystem|shm|tmpfs"| awk \'BEGIN{print "<ul>"}{w=sprintf("%d",$6);print " <li>" $5" - "$7  "&nbsp;" $6  "(" $2 ")" $4"/"$3 "</li>"}END{ print "</ul> "}\'',
     'df -kh | egrep -v "^Filesystem|shm|tmpfs|iso"',
