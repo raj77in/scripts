@@ -1,0 +1,49 @@
+#!/bin/bash
+headless=`ls /boot/headless* 2> /dev/null | head -n 1`
+echo "Headless Mode Enabled"
+if [ -e "$headless" ]
+then
+       systemctl enable sshd.service
+       systemctl start sshd.service
+       systemctl stop firstboot-graphical.service
+       systemctl disable firstboot-graphical.service
+
+       headtext=`grep '[0-9]' "$headless"`
+       if [ "$headtext"  != "" ]
+       then
+
+               ip_address=$(sed -n 's/IPADDR=//p' $headless)
+               ip_netmask=$(sed -n 's/NETMASK=//p' $headless)
+               ip_gateway=$(sed -n 's/GATEWAY=//p' $headless)
+
+               cat << EOF > /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+IPADDR=$ip_address
+NETMASK=$ip_netmask
+GATEWAY=$ip_gateway
+BOOTPROTO=static
+ONBOOT=yes
+NM_CONTROLLED=yes
+EOF
+
+               systemctl restart NetworkManager.service
+
+       else
+
+               cat << EOF > /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE=eth0
+BOOTPROTO=dhcp
+ONBOOT=yes
+NM_CONTROLLED=yes
+EOF
+
+       fi
+else
+      systemctl stop headless-mode.service
+      systemctl disable headless-mode.service
+fi
+
+#read ip address
+systemctl start ip-read.service
+#flashing ip address
+systemctl start ip-flash.service

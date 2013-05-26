@@ -1,0 +1,2 @@
+echo "sample text" | mail -s "Subject" username@domain.tld
+mpack -s "test" /home/pi/test/somefile.ext username@domain.tld

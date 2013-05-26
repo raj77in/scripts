@@ -1,0 +1,55 @@
+#!/bin/bash
+###########################################################
+# Simple Startup Menu
+#
+# Waits up to 10 seconds before choosing default action
+# User can select by entering option # with ENTER
+#
+###########################################################
+wait=25
+hostname=`hostname|tr '[:lower:]' '[:upper:]'`
+
+cat <<EOF
+
+Raspberry Pi Boot Menu - Host: [$hostname]
+============================================
+1) LXDE Desktop
+2) XMBC Media Center 
+3) Root Command Line
+4) Command Line
+============================================
+You have $wait Seconds to choose...
+EOF
+echo -n "Please Select (1,2,3,4) [3]: "
+read -t $wait inp
+echo
+
+case "$inp" in
+  1)
+    echo "Starting LXDE Desktop"
+    echo
+    /usr/bin/startx
+    exit 1
+    ;;
+  2)
+    echo "Starting XBMC"
+    echo
+    sudo /usr/lib/xbmc/xbmc.bin &
+    exit 1
+    ;;
+  4) 
+    echo "Command Line Only"
+    echo
+    exit 1
+    ;;
+  *)
+    echo "Executing Root Sudo"
+    echo
+    sudo su -
+    exit 1
+    ;;
+esac
+###########################################################
+# End of Script
+###########################################################
+
