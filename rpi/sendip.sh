@@ -5,7 +5,7 @@
 #
 #         USAGE: ./sendip.sh
 #
-#   DESCRIPTION: This script will email the IP address to desired address.
+#   DESCRIPTION: This script will email the IP address to desired email.
 #
 #       OPTIONS: ---
 #  REQUIREMENTS: ---
@@ -13,7 +13,7 @@
 #         NOTES: ---
 #        AUTHOR: Amit Agarwal (aka), amit.agarwal@roamware.com
 #  ORGANIZATION: Roamware
-# Last modified: Sun May 26, 2013  15:47PM
+# Last modified: Sun May 26, 2013  18:11PM
 #       CREATED: 05/26/2013 03:15:26 PM IST
 #      REVISION:  ---
 #===============================================================================
@@ -24,26 +24,34 @@ sender=ipaddress@amit-agarwal.co.in
 tempf="/home/pi/dev/"
 
 ip=$(ip addr show|grep "inet "|grep -v 127.0.0. | awk '{print $2}'|tr '\n' ','|sed 's/,$//')
-ip=$(ip addr|sed -n "s/^[[:space:]]\+inet \([0-9.]\+\).*/\1/p"| \
-grep -v 127.0.0.1|head -1)
-echo $ip >$tempf/localip
-extip=$(curl -s http://amit-agarwal.com/mystuff/getip_txt.php |tail -1)
-if [[ $(cat $tempf/externalip) != $extip ]]
+ip=$(ip addr|sed -n "s/^[[:space:]]\+inet \([0-9.]\+\).*/\1/p"| grep -v 127.0.0.1|head -1)
+if [[ $(date +%M) == "00" ]]
 then
-	echo "External IP is changed, call inadyn"
-	echo $extip >$tempf/externalip
-	/usr/sbin/inadyn
+	extip=$(curl -s http://amit-agarwal.com/mystuff/getip_txt.php |tail -1)
+	if [[ $(cat $tempf/externalip) != $extip ]]
+	then
+		echo "External IP is changed, call inadyn"
+		echo $extip >$tempf/externalip
+		/usr/sbin/inadyn
+	fi
 fi
-if [[ $ip != "192.168.2.106" && $(cat $tempf/localip) != $ip ]]
+if [[ $(cat $tempf/localip) != $ip ]]
 then
-	echo "IP addresses are $ip"
-	echo "To: $recepient
-From: $sender
-Subject: IP address of $(hostname -s) is $ip
+	echo $ip >$tempf/localip
+fi
+if [[ $(cat $tempf/localip) != $ip || $(cat $tempf/externalip) != $extip ]]
+then
+	if [[ $ip != "192.168.2.106" ]]
+	then
+		echo "IP addresses are $ip"
+		echo "To: $recepient
+		From: $sender
+		Subject: IP address of $(hostname -s) is $ip
 
-Your external IP is $extip.
+		Your external IP is $extip.
 
-	$(ip addr show)"|/usr/sbin/ssmtp $recepient
-else
-    echo "IP address has not changed."
+		$(ip addr show)"|/usr/sbin/ssmtp $recepient
+	else
+		echo "IP address has not changed."
+	fi
 fi
