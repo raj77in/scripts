@@ -131,7 +131,7 @@ To: amit.agarwal@roamware.com
 Subject: Stuatus of the servers ';
 print "$now \n";
 
-print "Content-Type: text/html\n\n", $template->output;
+print $template->output;
 for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
     local $_ = $ServerList[$ii];
     print STDERR "Going for $_" if $debug;
@@ -147,7 +147,7 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
         print STDERR "Ping failed\n"                  if $debug;
         $template->param( hostip => $host );
         $template->param( pingst => "$RED Failed $NOC" );
-        print $template->output;
+        # print $template->output;
 
         #next;
     }
@@ -159,7 +159,16 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
     print STDERR "Using the params for ssh - $host\n" if $debug;
 
     #$cmd = "ssh $host";
-    my $ssh = Net::SSH::Perl->new( $host, debug => 0 ) or next;
+    print "Login to $user - $host with $password \n" if $debug;
+    our $ssh;
+    eval {$ssh =  Net::SSH::Perl->new( $host, debug => 0 );};
+    if ( $@ ) 
+    {
+        $template->param( hostip => $host );
+        $template->param( pingst => "$RED Failed $NOC" );
+        print $template->output;
+    	next;;
+    }
     $ssh->login( $user, $password );
 
     #my $read = $exp->exp_before();
@@ -175,7 +184,7 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
 
         #$cmds[0]="uptime";
         $cmds[1] = q(/usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
-        $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm"';
+        $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm|sandeep"';
         print STDERR "This is solaris host\n" if $debug;
         $template->param( osname => "SunOS" );
     }
@@ -239,12 +248,14 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
             my @parts = split / +/;
             print STDERR Dumper @parts if $debug;
             print STDERR "OUTPUT :: $_\n" if $debug;
-            $parts[4] =~ s/%//;
-            if ( $parts[4] <= $DISK_WARN ) {
-                $disk = "$disk\n<li>$GREEN $parts[5] - Total($parts[1]) - $parts[4]%$NOC</li>";
-            }
-            else {
-                $disk = "$disk\n<li>$RED $parts[5] - Total($parts[1]) - $parts[4]%$NOC</li>";
+            if ( scalar @parts >= 4 ) {
+            	$parts[4] =~ s/%//;
+            	if ( $parts[4] <= $DISK_WARN ) {
+                	$disk = "$disk\n<li>$GREEN $parts[5] - Total($parts[1]) - $parts[4]%$NOC</li>";
+            	}
+            	else {
+                	$disk = "$disk\n<li>$RED $parts[5] - Total($parts[1]) - $parts[4]%$NOC</li>";
+            	}
             }
         }
         $template->param( diskst => "$disk" );
@@ -260,7 +271,7 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
     }
 
     #Last log
-    $cmd = q(last|head -5);
+    $cmd = q(last|head -5|awk '{print $1"-"$3" on "$4}');
     ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
     print STDERR "Output for last  - $read- \n" if $debug;
     my $lastst = "";
