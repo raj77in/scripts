@@ -42,11 +42,9 @@
 #
 #
 
-use strict;
-use warnings;
 
 #use Expect;
-use Net::SSH::Perl;
+use Net::OpenSSH;
 use Data::Dumper;
 use Net::Ping::External qw(ping);
 use FindBin;
@@ -62,6 +60,14 @@ my $DISK_WARN = 75;
 my $RAM_WARN  = 40;
 my $dir       = $FindBin::Bin;
 my $listfile  = "$dir/list.txt";
+my $ii;
+
+my $array;
+
+
+$Data::Dumper::Indent = 1;
+$Data::Dumper::Sortkeys = 1;
+$Data::Dumper::Useqq = 1;
 
 #print "List file is $listfile \n";
 
@@ -126,14 +132,11 @@ use HTML::Template;
 my $now = localtime;
 my $template = HTML::Template->new( filename => "$dir/head.tmpl" );
 $template->param( date => `date` );
-print 'From: Amit-status<amit.agarwal@roamware.com>
-To: amit.agarwal@roamware.com
-Subject: Stuatus of the servers ';
-print "$now \n";
 
 print $template->output;
-for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
+for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     local $_ = $ServerList[$ii];
+    $array[$ii]{'srv'}="$_";
     print STDERR "Going for $_" if $debug;
     $template = HTML::Template->new( filename => "$dir/html.tmpl" );
     chomp;
@@ -141,18 +144,19 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
     my $cmd = "";
 
     #ping
+    $array[$ii]{'host'}="$host";
     my $alive = ping( hostname => "$host", timeout => 5 );
     if ( !$alive ) {
         print STDERR "Return value from ping is $?\n" if $debug;
         print STDERR "Ping failed\n"                  if $debug;
-        $template->param( hostip => $host );
-        $template->param( pingst => "$RED Failed $NOC" );
+        $array[$ii]{'ping'}="$RED Failed $NOC";
         # print $template->output;
 
         #next;
     }
     else {
         $template->param( pingst => "$GREEN Ok $NOC" );
+        $array[$ii]{'ping'}="$GREEN Ok $NOC";
     }
 
     print STDERR "Getting details for server $_\n"    if $debug;
@@ -161,85 +165,81 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
     #$cmd = "ssh $host";
     print "Login to $user - $host with $password \n" if $debug;
     our $ssh;
-    eval {$ssh =  Net::SSH::Perl->new( $host, debug => 0 );};
+    my %opts;
+    $opts{host} = $host;
+    $opts{user} = $user;
+    $opts{password} = $password;
+
+    $ssh =  Net::OpenSSH->new($host  , %opts ) or die "Cannot continue".$ssh->error;
     if ( $@ ) 
     {
-        $template->param( hostip => $host );
-        $template->param( pingst => "$RED Failed $NOC" );
         print $template->output;
     	next;;
     }
-    $ssh->login( $user, $password );
-
-    #my $read = $exp->exp_before();
-    #chomp $read;
-    #print "Data receeived \n" if $debug;
-    #print Dumper($read) if $debug;
-
-    #my $out=$exp->send( "ls -la\r");
-    #print Dumper $out if $debug;
-    #
-    my ( $read, $out, $err ) = $ssh->cmd("uname");
+    my %o;
+    my ($read, $out, $err);
+    $read = $ssh->capture("uname");
+    chomp($read);
     if ( $read =~ /SunOS/ ) {
 
         #$cmds[0]="uptime";
         $cmds[1] = q(/usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
         $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm|sandeep"';
         print STDERR "This is solaris host\n" if $debug;
-        $template->param( osname => "SunOS" );
+        $array[$ii]{'osname'} = "SunOS" ;
     }
     else {
         print STDERR "OS is $read\n" if $debug;
-        $template->param( osname => "$read" );
+        $array[$ii]{'osname'} = "$read" ;
     }
 
-    ( $read, $out, $err ) = $ssh->cmd("hostname");
+    $read = $ssh->capture("hostname");
     chomp $read;
     $read = substr( $read, 0, 7 );
 
-    $template->param( hostname => $read );
-    $template->param( hostip   => $host );
+    $array[$ii]{'hostname'} = $read ;
+    $array[$ii]{'hostip'}   = $host ;
 
-    ( $read, $out, $err ) = $ssh->cmd("date\n");
+     $read = $ssh->capture("date\n");
     chomp $read;
-    $template->param( date => $read );
+    $array[$ii]{'date'} = $read ;
 
     #uptime
-    ( $read, $out, $err ) = $ssh->cmd("$cmds[0]|sed \'s/,//\'\n");
+     $read = $ssh->capture("$cmds[0]|sed \'s/,//\'\n");
     chomp $read;
     print STDERR "Executing $cmds[0]\n" if $debug;
     print STDERR "Output is -- $read\n" if $debug;
-    $template->param( uptime => $read );
+    $array[$ii]{'uptime'}=$read;
 
     # Load averavge
     $cmd = q(uptime |sed 's/.*average://'|sed 's/,/ /g'|sed 's/^ //g');
-    ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
+    $read = $ssh->capture("$cmd\n");
     chomp $read;
     print STDERR "Loadavg - Output is --$read--\n" if $debug;
     my @loads = split( / +/, $read );
     print STDERR Dumper @loads if $debug;
     if ( $loads[0] >= $LOAD_WARN ) {
-        $template->param( loadavg => "$RED $loads[0]/$loads[1]/$loads[2] (High) $NOC\n" );
+        $array[$ii]{'loadavg'} = "$RED $loads[0]/$loads[1]/$loads[2] (High) $NOC\n" ;
     }
     else {
-        $template->param( loadavg => "$GREEN $loads[0]/$loads[1]/$loads[2] (Ok) $NOC\n" );
+        $array[$ii]{'loadavg'} = "$GREEN $loads[0]/$loads[1]/$loads[2] (Ok) $NOC\n" ;
     }
 
     #Running Processes
     print STDERR "Executing $cmds[3]\n" if $debug;
-    ( $read, $out, $err ) = $ssh->cmd("$cmds[3]\n");
+    $read = $ssh->capture("$cmds[3]\n");
     chomp $read;
     if ( $read <= $PROC_WARN ) {
-        $template->param( runningProcs => "$GREEN $read (Ok) $NOC" );
+        $array[$ii]{'runningProcs'} = "$GREEN $read (Ok) $NOC" ;
     }
     else {
-        $template->param( runningProcs => "$RED $read (High) $NOC" );
+        $array[$ii]{'runningProcs'} = "$RED $read (High) $NOC" ;
 
     }
 
     # Disk usage
     print STDERR "Executing $cmds[2]\n" if $debug;
-    ( $read, $out, $err ) = $ssh->cmd("$cmds[2]\n");
+    $read = $ssh->capture("$cmds[2]\n");
     if ( defined $read and $read !~ /^$/ ) {
         chomp $read;
         my @disks = split( /\n/, $read );
@@ -258,31 +258,31 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
             	}
             }
         }
-        $template->param( diskst => "$disk" );
+        $array[$ii]{'diskst'} = "$disk" ;
     }
 
     # Total users
     $cmd = q(who |awk '{print $1}'|sort |uniq -c|sort -nr |tr '\n' ',' );
-    ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
+    $read = $ssh->capture("$cmd\n");
     if ( defined $read and $read !~ /^$/ ) {
         chomp $read;
         print STDERR "Output for total users - $read- \n" if $debug;
-        $template->param( usertot => "$read" );
+        $array[$ii]{'usertot'} = "$read";
     }
 
     #Last log
     $cmd = q(last|head -5|awk '{print $1"-"$3" on "$4}');
-    ( $read, $out, $err ) = $ssh->cmd("$cmd\n");
+    $read = $ssh->capture("$cmd\n");
     print STDERR "Output for last  - $read- \n" if $debug;
     my $lastst = "";
     foreach ( split /\n/, $read ) {
         $lastst = "<li>$_</li>\n$lastst";
     }
-    $template->param( lastst => "$lastst" );
+    $array[$ii]{'lastst'} = "$lastst" ;
 
     #RAM Usage
     print STDERR "Executing $cmds[1]\n" if $debug;
-    ( $read, $out, $err ) = $ssh->cmd("$cmds[1]\n");
+    $read = $ssh->capture("$cmds[1]\n");
     if ( defined $read and $read !~ /^$/ ) {
         my @parts = split( /,/, $read );
         my $post  = "Kb";
@@ -303,12 +303,33 @@ for ( my $ii = 0; $ii <= $#ServerList; $ii++ ) {
         else {
             $read = sprintf("$GREEN Total - $parts[0] - Used - $pert%% $NOC\n");
         }
-        $template->param( ramst => "$read" );
+        $array[$ii]{'ramst'} = "$read" ;
+        if ( $debug ){
+            print STDERR "Dump all data \n\n\n";
+            print Dumper @array if $debug;
+        }
     }
-    print $template->output;
     undef $ssh;
 
 }
+@a=("hostname",  "hostip",  "osname" , "ping","date","uptime", "loadavg","ramst","runningProcs", "diskst", "usertot", "lastst");
+
+%desc=( hostname => "Hostname", hostip => "IP",
+  osname => "OS", ping => "Ping Status", date => "Date/Time", 
+  uptime => "Uptime", loadavg => "Load avg", ramst => "RAM/Swap used",
+  runningProcs => "Running Procs", diskst => "Disk",
+  usertot => "Total Users", lastst => "Last Logins");
+print "$ii is \$ii\n" if $debug;
+print '<TABLE WIDTH=100% BORDER=2 BORDERCOLOR="#000080" CELLPADDING=4 CELLSPACING=4 FRAME=HSIDES RULES=NONE" >';
+foreach $i ( @a )  {
+    print "<tr>";
+    print "<td><b>$desc{$i} :</b></td>";
+    for( $c=$ii-1; $c >=0; $c--){
+        print "<td>$array[$c]{$i}</td>";
+    }
+    print "</tr>";
+}
+print "</table>";
 
 $template = HTML::Template->new( filename => "$dir/tail.tmpl" );
 print $template->output;
