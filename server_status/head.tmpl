@@ -1,48 +1,54 @@
 <HTML5>
-    <HEAD>
-        <TITLE>Network Status
-        </TITLE>
-        <style>
-        table a:link {
-    color: #666;
-    font-weight: bold;
-    text-decoration:none;
+<HEAD>
+<TITLE>Network Status
+</TITLE>
+</HEAD>
+<style>
+.green { color: green}
+.red {color:red}
+
+table a:link {
+color: #666;
+       font-weight: bold;
+       text-decoration:none;
 }
 table a:visited {
-    color: #999999;
-    font-weight:bold;
-    text-decoration:none;
+color: #999999;
+       font-weight:bold;
+       text-decoration:none;
 }
 table a:active,
-table a:hover {
-    color: #bd5a35;
-    text-decoration:underline;
-}
+      table a:hover {
+color: #bd5a35;
+       text-decoration:underline;
+      }
 table {
     font-family:Arial, Helvetica, sans-serif;
-    color:#666;
-    font-size:12px;
-    text-shadow: 1px 1px 0px #fff;
-    background:#eaebec;
-    margin:20px;
-    border:#ccc 1px solid;
+color: #3a3a3a;
+# font-size:8px;
+      text-shadow: 1px 1px 0px #fff;
+background:#eaebec;
+# margin:20px;
+border:#ccc 1px solid;
 
-    -moz-border-radius:3px;
-    -webkit-border-radius:3px;
-    border-radius:3px;
+       -moz-border-radius:3px;
+       -webkit-border-radius:3px;
+       border-radius:3px;
 
-    -moz-box-shadow: 0 1px 2px #d1d1d1;
-    -webkit-box-shadow: 0 1px 2px #d1d1d1;
-    box-shadow: 0 1px 2px #d1d1d1;
+       -moz-box-shadow: 0 1px 2px #d1d1d1;
+       -webkit-box-shadow: 0 1px 2px #d1d1d1;
+       box-shadow: 0 1px 2px #d1d1d1;
 }
 table th {
-    padding:21px 25px 22px 25px;
-    border-top:1px solid #fafafa;
-    border-bottom:1px solid #e0e0e0;
+padding:21px 25px 22px 25px;
+        border-top:1px solid #fafafa;
+        border-bottom:1px solid #e0e0e0;
 
-    background: #ededed;
-    background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#ebebeb));
-    background: -moz-linear-gradient(top,  #ededed,  #ebebeb);
+background: #ededed;
+background: -webkit-gradient(linear, left top, left bottom, from(#ededed), to(#ebebeb));
+background: -moz-linear-gradient(top,  #ededed,  #ebebeb);
+       font-weight: bold;
+       font-color: blue;
 }
 table th:first-child {
     text-align: left;
@@ -68,19 +74,19 @@ table td:first-child {
     border-left: 0;
 }
 table td {
-    padding:18px;
-    border-top: 1px solid #ffffff;
-    border-bottom:1px solid #e0e0e0;
-    border-left: 1px solid #e0e0e0;
+padding:18px;
+        border-top: 1px solid #ffffff;
+        border-bottom:1px solid #e0e0e0;
+        border-left: 1px solid #e0e0e0;
 
-    background: #fafafa;
-    background: -webkit-gradient(linear, left top, left bottom, from(#fbfbfb), to(#fafafa));
-    background: -moz-linear-gradient(top,  #fbfbfb,  #fafafa);
+background: #fafafa;
+background: -webkit-gradient(linear, left top, left bottom, from(#fbfbfb), to(#fafafa));
+background: -moz-linear-gradient(top,  #fbfbfb,  #fafafa);
 }
 table tr.even td {
-    background: #f6f6f6;
-    background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#f6f6f6));
-    background: -moz-linear-gradient(top,  #f8f8f8,  #f6f6f6);
+background: #f6f6f6;
+background: -webkit-gradient(linear, left top, left bottom, from(#f8f8f8), to(#f6f6f6));
+background: -moz-linear-gradient(top,  #f8f8f8,  #f6f6f6);
 }
 table tr:last-child td {
     border-bottom:0;
@@ -96,19 +102,18 @@ table tr:last-child td:last-child {
     border-bottom-right-radius:3px;
 }
 table tr:hover td {
-    background: #f2f2f2;
-    background: -webkit-gradient(linear, left top, left bottom, from(#f2f2f2), to(#f0f0f0));
-    background: -moz-linear-gradient(top,  #f2f2f2,  #f0f0f0);  
+background: #f2f2f2;
+background: -webkit-gradient(linear, left top, left bottom, from(#f2f2f2), to(#f0f0f0));
+background: -moz-linear-gradient(top,  #f2f2f2,  #f0f0f0);  
 }
 
+</style>
 
-        </style>
-
-    </HEAD>
-    <BODY alink="#0066ff" bgcolor="#00ffff" link="#0000ff" text="#ccddee" vlink="#0033ff">
-        <CENTER>
-            <H1> My Network Info </H1>
-        Generated on <TMPL_VAR NAME=date>
-        </CENTER>
-        <TABLE WIDTH=100% BORDER=2 BORDERCOLOR="#000080" CELLPADDING=4 CELLSPACING=4 FRAME=HSIDES RULES=NONE" >
-            <TR VALIGN=TOP>
+<BODY alink="#0066ff" bgcolor="#555555" link="#0000ff" text="#ccddee" vlink="#0033ff">
+<CENTER>
+<H1> My Network Info </H1>
+Generated on <TMPL_VAR NAME=date>
+</CENTER>
+<!-- TABLE WIDTH=100% BORDER=2 BORDERCOLOR="#000080" CELLPADDING=4 CELLSPACING=4 FRAME=HSIDES RULES=NONE" >
+<TR VALIGN=TOP>-->
+<TABLE>

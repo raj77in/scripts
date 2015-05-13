@@ -51,9 +51,12 @@ use FindBin;
 
 my $debug     = 0;
 my $timeout   = 30;
-my $GREEN     = '<font color="#00ff00">';
-my $RED       = '<font color="#ff0000">';
-my $NOC       = '</font>';
+#akamy $GREEN     = '<font color="#00ff00">';
+#akamy $RED       = '<font color="#ff0000">';
+#akamy $NOC       = '</font>';
+my $GREEN     = '<span class=green>';
+my $RED       = '<span class=red>';
+my $NOC       = '</span>';
 my $LOAD_WARN = 5.0;
 my $PROC_WARN = 200;
 my $DISK_WARN = 75;
@@ -176,6 +179,7 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
         print $template->output;
     	next;;
     }
+    next unless $ssh;
     my %o;
     my ($read, $out, $err);
     $read = $ssh->capture("uname");
@@ -317,23 +321,32 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     undef $ssh;
 
 }
-@a=("hostname",  "hostip",  "osname" , "ping","date","uptime", "loadavg","ramst","runningProcs", "diskst", "usertot", "lastst");
+@a=("hostip",  "osname" , "ping","date","uptime", "loadavg","ramst","runningProcs", "diskst", "usertot", "lastst");
 
 %desc=( hostname => "Hostname", hostip => "IP",
-    osname => "OS", ping => "Ping Status", date => "Date/Time", 
+    osname => "OS", ping => "Ping", date => "Date/Time", 
     uptime => "Uptime", loadavg => "Load avg", ramst => "RAM/Swap used",
     runningProcs => "Running Procs", diskst => "Disk",
     usertot => "Total Users", lastst => "Last Logins");
 print "$ii is \$ii\n" if $debug;
-print '<TABLE WIDTH=100% BORDER=1 BORDERCOLOR="#000080" CELLPADDING=4 CELLSPACING=4 FRAME=HSIDES RULES=NONE" >';
+
+print '<thead><tr>';
+    print "<tr>";
+    print "<th><b>$desc{$i} :</b></th>\n";
+    for( $c=$ii-1; $c >=0; $c--){
+        print "<th>$array[$c]{'hostname'}</th>";
+    }
+print '</tr></thead>\n';
+print '<tbody>';
 foreach $i ( @a )  {
     print "<tr>";
-    print "<td><b>$desc{$i} :</b></td>";
+    print "<td><b>$desc{$i} :</b></td>\n";
     for( $c=$ii-1; $c >=0; $c--){
         print "<td>$array[$c]{$i}</td>";
     }
-    print "</tr>";
+    print "</tr>\n";
 }
+print '</tbody>';
 print "</table>";
 
 $template = HTML::Template->new( filename => "$dir/tail.tmpl" );
