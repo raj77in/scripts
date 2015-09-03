@@ -187,7 +187,7 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     if ( $read =~ /SunOS/ ) {
 
         #$cmds[0]="uptime";
-        $cmds[1] = q(/usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
+        $cmds[1] = q([[ -d /usr/sbin/swap ]] && /usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
         $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm|sandeep"';
         print STDERR "This is solaris host\n" if $debug;
         $read = $ssh->capture("uname -rp" );

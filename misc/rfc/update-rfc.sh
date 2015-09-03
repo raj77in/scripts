@@ -13,7 +13,7 @@
 #         NOTES: ---
 #        AUTHOR: Amit Agarwal (aka), amit.agarwal@roamware.com
 #  ORGANIZATION: Roamware
-# Last modified: Tue Aug 04, 2015  17:17PM
+# Last modified: Tue Aug 11, 2015  01:55PM
 #       CREATED: 04/23/2013 05:51:06 PM IST
 #      REVISION:  ---
 #===============================================================================
@@ -47,7 +47,6 @@ getFile ftp://www.iana.org/assignments/port-numbers
 
 sed -i.bak '2,5 d; 
 1 a\
-> \
 <?xml-stylesheet type="text/xsl" href="./rfc2html/rfc2html.xslt"?> \
 <rfc-index>' rfc-index.xml
 
