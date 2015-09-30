@@ -32,7 +32,7 @@
 # REQUIREMENTS: ---
 #         BUGS: ---
 #        NOTES: ---
-#       AUTHOR: Amit Agarwal(amit.agarwal@roamware.com)
+#       AUTHOR: Amit Agarwal
 # ORGANIZATION: Individual
 #      VERSION: 1.0
 #      CREATED: 05/02/2013 09:27:50 AM
@@ -126,8 +126,8 @@ use HTML::Template;
 my $now = localtime;
 my $template = HTML::Template->new( filename => "$dir/head.tmpl" );
 $template->param( date => `date` );
-print 'From: Amit-status<amit.agarwal@roamware.com>
-To: amit.agarwal@roamware.com
+print 'From: Amit-status<amit.agarwal@example.com>
+To: amit.agarwal@example.com
 Subject: Stuatus of the servers ';
 print "$now \n";
 

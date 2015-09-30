@@ -12,10 +12,9 @@
 #  REQUIREMENTS:  ---
 #          BUGS:  ---
 #         NOTES:  ---
-#        AUTHOR: Amit Agarwal (aka), amit.agarwal@roamware.com
-#       COMPANY: Roamware India Pvt Ltd
+#        AUTHOR: Amit Agarwal (aka), amit.agarwal@example
 #       CREATED: 09/06/2011 05:14:48 PM IST
-# Last modified: Tue Apr 16, 2013  11:14AM
+# Last modified: Wed Sep 30, 2015  09:56AM
 #      REVISION:  ---
 #===============================================================================
 
@@ -68,12 +67,10 @@
 
 # SSH SERVER HOST IPS, setup me
 # Change this to query your host
-#Q_HOST="172.16.131.12 172.16.131.11 172.16.131.13 172.16.131.16 172.16.131.15 172.16.131.113 172.16.131.114 172.16.131.201"
-#Q_HOST="172.16.131.12 172.16.131.11 172.16.131.13 172.16.131.16 172.16.131.15"
-Q_HOST="172.16.131.11 172.16.131.12 172.16.131.13 172.16.131.14 172.16.131.15 172.16.131.16 10.10.16.52 10.10.17.204 10.10.16.195 "
+Q_HOST="127.0.0.1"
 
 # SSH USER, change me
-USR="roamware"
+USR="test"
 
 # Show warning if server load average is below the limit for last 5 minute
 LOAD_WARN=5.0
@@ -103,8 +100,7 @@ NOW="$(date)"
 ## functions ##
 writeHead(){
     echo 'Content-Type: text/html'
-    echo 'From: Amit-status<amit.agarwal@roamware.com>'
-    echo 'To: amit.agarwal@roamware.com'
+    echo 'To: amit.agarwal@example'
     echo "Subject: Stuatus of the servers $(date)"
 
 

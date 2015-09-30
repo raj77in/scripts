@@ -6,7 +6,7 @@ spawn  ssh $uname@$host
 
 expect {
     "password:" {
-        send "roamware\r"
+        send "test\r"
     } "yes/no)?" {
         send "yes\r";
         set timeout -1
