@@ -124,7 +124,7 @@ my @cmds = (
     else
     echo $ruptime | awk \'{ print $3 " days " $5 "(HH:MM)"}\'
     fi',
-    q( free -kto | grep Mem: | awk '{ print $2"," $3"," $4}'),
+    q( free -kt | grep Mem: | awk '{ print $2"," $3"," $4}'),
 
     # 'df -kh | egrep -v "^Filesystem|shm|tmpfs"| awk \'BEGIN{print "<ul>"}{w=sprintf("%d",$6);print " <li>" $5" - "$7  "&nbsp;" $6  "(" $2 ")" $4"/"$3 "</li>"}END{ print "</ul> "}\'',
     'df -kh | egrep -v "^Filesystem|shm|tmpfs|iso" 2>/dev/null',
@@ -196,7 +196,7 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     }
     else {
         print STDERR "OS is $read\n" if $debug;
-        $read1 = $ssh->capture("source /etc/os-release 2>/dev/null && echo $PRETTY_NAME || cat /etc/redhat-release" );
+        $read1 = $ssh->capture('source /etc/os-release 2>/dev/null && echo $PRETTY_NAME || cat /etc/redhat-release' );
         chomp($read1);
         $array[$ii]{'osname'} = "$read $read1" ;
         print STDERR "OS is".$array[$ii]{'osname'}."\n" if $debug;
@@ -321,6 +321,7 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     undef $ssh;
 
 }
+
 @a=("hostip",  "osname" , "ping","date","uptime", "loadavg","ramst","runningProcs", "diskst", "usertot", "lastst");
 
 %desc=( hostname => "Hostname", hostip => "IP",
