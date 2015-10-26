@@ -333,7 +333,7 @@ print "$ii is \$ii\n" if $debug;
 
 print '<thead><tr>';
     print "<tr>";
-    print "<th><b>$desc{$i} :</b></th>\n";
+    print "<th><b>Hostname:</b></th>\n";
     for( $c=$ii-1; $c >=0; $c--){
         print "<th>$array[$c]{'hostname'}</th>";
     }
