@@ -337,7 +337,7 @@ print '<thead><tr>';
     for( $c=$ii-1; $c >=0; $c--){
         print "<th>$array[$c]{'hostname'}</th>";
     }
-print '</tr></thead>\n';
+print '</tr></thead>';
 print '<tbody>';
 foreach $i ( @a )  {
     print "<tr>";
