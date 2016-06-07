@@ -187,8 +187,8 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     if ( $read =~ /SunOS/ ) {
 
         #$cmds[0]="uptime";
-        $cmds[1] = q([[ -d /usr/sbin/swap ]] && /usr/sbin/swap -s|sed 's/k / /g'|awk '{ print \($9+$11\)"," $2 "," $11 }');
-        $cmds[2] = 'df -hk -F ufs | egrep -v "^Filesystem|shm|sandeep"';
+        $cmds[1] = q([[ -x /usr/sbin/swap ]] && /usr/sbin/swap -s|sed 's/k / /g'|awk '{ print $9+$11"," $2 "," $11 }');
+        $cmds[2] = 'df -hk | egrep -v "^Filesystem|shm|sandeep"';
         print STDERR "This is solaris host\n" if $debug;
         $read = $ssh->capture("uname -rp" );
         chomp($read);
@@ -196,6 +196,7 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     }
     else {
         print STDERR "OS is $read\n" if $debug;
+        $cmds[1] = q(free -m |awk '/^Mem:/{ print $2"," $3 "," $4 }');
         $read1 = $ssh->capture('source /etc/os-release 2>/dev/null && echo $PRETTY_NAME || cat /etc/redhat-release' );
         chomp($read1);
         $array[$ii]{'osname'} = "$read $read1" ;
@@ -290,8 +291,8 @@ for ( $ii = 0; $ii <= $#ServerList; $ii++ ) {
     $array[$ii]{'lastst'} = "$lastst" ;
 
     #RAM Usage
-    print STDERR "Executing $cmds[1]\n" if $debug;
     $read = $ssh->capture($cmds[1]);
+    print STDERR "Executing $cmds[1] on $host\n" if $debug;
     if ( defined $read and $read !~ /^$/ ) {
         my @parts = split( /,/, $read );
         my $post  = "Kb";
