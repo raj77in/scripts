@@ -21,6 +21,7 @@ outdir = "/tmp/terminal-colors/out/"
 
 extra_themes = (
     "https://web.archive.org/web/20090130061234/http://phraktured.net/terminal-colors/"
+    ## https://github.com/mbadolato/iTerm2-Color-Schemes
 )
 
 
@@ -85,18 +86,19 @@ def mk_terminal_sexy():
         ofptr = open(outdir + "terminal.sexy/" + outfile, "w")
 
         ofptr.writelines("*foreground:\t" + d["foreground"] + "\n")
-        ofptr.writelines("URxvt.foreground:\t" + d["foreground"] + "\n")
+        # ofptr.writelines("URxvt.foreground:\t" + d["foreground"] + "\n")
         ofptr.writelines("*background:\t" + d["background"] + "\n")
-        ofptr.writelines("URxvt.tintColor:\t" + d["background"] + "\n")
+        # ofptr.writelines("URxvt.tintColor:\t" + d["background"] + "\n")
         for i in range(7):
             col = d["color"][i]
             # print ("aka color"+str(i)+"\t"+col)
             ofptr.writelines("\n!! Color - " + str(i) + "\n")
             ofptr.writelines("*color" + str(i) + ":\t" + col + "\n")
             ofptr.writelines("*color" + str(i + 8) + ":\t" + col + "\n")
-            ofptr.writelines("URxvt.color" + str(i) + ":\t" + col + "\n")
-            ofptr.writelines("URxvt.color" + str(i + 8) + ":\t" + col + "\n")
+            # ofptr.writelines("URxvt.color" + str(i) + ":\t" + col + "\n")
+            # ofptr.writelines("URxvt.color" + str(i + 8) + ":\t" + col + "\n")
 
+        ofptr.writelines("\n! vim:ft=dosini\n")
         ofptr.close()
 
 
@@ -112,10 +114,13 @@ def mk_gogh():
         ofptr = open(outdir + "gogh/" + outfile, "w")
         if len(match) > 15:
             print(match)
-            for i in range(1, 16):
+            for i in range(0, 16):
+                if "FOREGROUND" in match[i - 1]:
+                    match[i - 1] = match[16]
                 ofptr.writelines("*color" + str(i) + ":\t" + match[i - 1] + "\n")
-        ofptr.writelines("*foreground:\t" + match[1])
-        ofptr.writelines("*background:\t" + match[5])
+        ofptr.writelines("\n*foreground:\t" + match[1])
+        ofptr.writelines("\n*background:\t" + match[5])
+        ofptr.writelines("\n! vim:ft=dosini\n")
         ofptr.close()
 
 
