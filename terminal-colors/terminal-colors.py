@@ -80,7 +80,7 @@ def mk_terminal_sexy():
         print(infile)
         d = parse_json(infile)
         # pprint(d)
-        outfile = infile.split("/")[-1].replace(".json", ".xdefaults")
+        outfile = infile.split("/")[-1].replace(".json", ".xdefaults").replace(" ", "_")
         print(outfile)
 
         ofptr = open(outdir + "terminal.sexy/" + outfile, "w")
@@ -110,7 +110,9 @@ def mk_gogh():
         # print(content)
 
         match = re.findall(r".*COLOR.*=\"(.*)\"", content, re.MULTILINE)
-        outfile = (os.path.basename(infile)).replace(".sh", ".xdefaults")
+        outfile = (
+            (os.path.basename(infile)).replace(".sh", ".xdefaults").replace(" ", "_")
+        )
         ofptr = open(outdir + "gogh/" + outfile, "w")
         if len(match) > 15:
             print(match)
